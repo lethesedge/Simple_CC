@@ -7,6 +7,7 @@ Run this whenever the raw-data/ files are updated:
     python3 scripts/build_food_data.py
 """
 import json
+import re
 import zipfile
 from pathlib import Path
 
@@ -19,6 +20,19 @@ SOURCES = [
 ]
 
 ENERGY_NUTRIENT_ID = 1008  # kcal
+
+# This bundle is meant to be whole/generic foods only — branded and
+# restaurant items are handled by the live Open Food Facts search instead.
+# SR Legacy (an older USDA file) mixes in a lot of both, so filter them out.
+EXCLUDED_CATEGORIES = {"Fast Foods", "Restaurant Foods"}
+BRAND_NAME_PATTERN = re.compile(r"^[A-Z0-9&'\-. ]{2,},")
+
+
+def is_branded(food, name):
+    category = (food.get("foodCategory") or {}).get("description")
+    if category in EXCLUDED_CATEGORIES:
+        return True
+    return bool(BRAND_NAME_PATTERN.match(name))
 
 
 def load_source(zip_name, top_level_key):
@@ -64,6 +78,9 @@ def build():
                 continue
 
             name = food["description"]
+            if is_branded(food, name):
+                continue
+
             dedup_key = (source_id, name)
             if dedup_key in seen_names:
                 continue

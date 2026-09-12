@@ -152,23 +152,32 @@ function initAddFoodDialog() {
     }
   }
 
+  const status = document.getElementById("food-search-status");
+
   searchInput.addEventListener("input", () => {
     clearTimeout(searchDebounce);
     const q = searchInput.value;
     searchDebounce = setTimeout(async () => {
       const foods = await searchAllOfflineFoods(q);
+      status.textContent = foods.length === 0 && q.trim().length >= 2 ? "No offline matches." : "";
       renderResults(foods);
     }, 200);
   });
 
   document.getElementById("food-search-branded").addEventListener("click", async () => {
     const q = searchInput.value;
-    if (!q || q.trim().length < 2) return;
+    if (!q || q.trim().length < 2) {
+      status.textContent = "Type at least 2 characters first.";
+      return;
+    }
+    status.textContent = "Searching Open Food Facts…";
     try {
       const foods = await searchBrandedFoods(q);
+      status.textContent = foods.length === 0 ? `No branded results found for "${q}".` : "";
       renderResults(foods);
     } catch (err) {
-      alert("Branded search failed — check you're online. " + err.message);
+      status.textContent = `Branded search failed: ${err.message}. Check you're online.`;
+      console.error("Branded search error:", err);
     }
   });
 
@@ -202,6 +211,7 @@ function initAddFoodDialog() {
   function closeAddFoodDialog() {
     dialog.close();
     searchInput.value = "";
+    status.textContent = "";
     results.innerHTML = "";
     quantityPanel.hidden = true;
     selectedFood = null;

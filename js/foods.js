@@ -11,23 +11,30 @@ async function loadBundledFoods() {
   return bundledFoods;
 }
 
-function matchesQuery(name, query) {
-  return name.toLowerCase().includes(query.toLowerCase());
+// Ranks a plain "Chicken, breast, raw" above "Bologna, chicken, pork" for a
+// search of "chicken" — lower is better, or null for no match at all.
+function matchRank(name, query) {
+  const lower = name.toLowerCase();
+  const idx = lower.indexOf(query);
+  if (idx === -1) return null;
+  if (idx === 0) return 0; // name starts with the query
+  if (lower[idx - 1] === "," || lower[idx - 1] === " ") return 1; // starts a word
+  return 2; // buried mid-word
 }
 
 // Search the offline USDA dataset. Always available, no network needed.
 export async function searchLocalFoods(query, limit = 25) {
   if (!query || query.trim().length < 2) return [];
   const foods = await loadBundledFoods();
-  const q = query.trim();
-  const results = [];
+  const q = query.trim().toLowerCase();
+
+  const ranked = [];
   for (const food of foods) {
-    if (matchesQuery(food.name, q)) {
-      results.push(food);
-      if (results.length >= limit) break;
-    }
+    const rank = matchRank(food.name, q);
+    if (rank !== null) ranked.push({ food, rank });
   }
-  return results;
+  ranked.sort((a, b) => a.rank - b.rank || a.food.name.length - b.food.name.length);
+  return ranked.slice(0, limit).map((r) => r.food);
 }
 
 export async function searchCustomFoods(query) {
@@ -47,20 +54,21 @@ export async function searchBrandedFoods(query, limit = 15) {
   url.searchParams.set("action", "process");
   url.searchParams.set("json", "1");
   url.searchParams.set("page_size", String(limit));
-  url.searchParams.set(
-    "fields",
-    "code,product_name,brands,nutriments,serving_size"
-  );
 
-  const res = await fetch(url, {
-    headers: { "User-Agent": "Simple_CC - personal calorie tracker" },
-  });
+  // Note: browsers refuse to let JS set a custom User-Agent header on
+  // fetch() (it's a forbidden header), so we don't try — Open Food Facts
+  // still serves the request fine with whatever the browser sends.
+  const res = await fetch(url);
   if (!res.ok) throw new Error(`Open Food Facts search failed: ${res.status}`);
   const data = await res.json();
 
   return (data.products || [])
     .map((p) => {
-      const kcal = p.nutriments?.["energy-kcal_100g"];
+      // Most products report kcal directly; a few only have kJ on file.
+      let kcal = p.nutriments?.["energy-kcal_100g"];
+      if (kcal == null && p.nutriments?.["energy_100g"] != null) {
+        kcal = p.nutriments["energy_100g"] / 4.184; // kJ -> kcal
+      }
       if (kcal == null || !p.product_name) return null;
       return {
         id: `off:${p.code}`,
