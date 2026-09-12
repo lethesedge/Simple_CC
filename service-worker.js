@@ -1,4 +1,7 @@
-const CACHE_NAME = "simple_cc-v1";
+// Bump this on every change to this file's own logic (browsers only check
+// for a new service worker when this file's bytes differ) — and also
+// whenever the precached URL list changes, so old caches get cleared out.
+const CACHE_NAME = "simple_cc-v2";
 const PRECACHE_URLS = [
   "./",
   "index.html",
@@ -31,6 +34,11 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
+// Network-first: always try to fetch the latest version when online, and
+// only fall back to the cached copy when offline. This is the opposite of
+// cache-first — it costs a network round-trip on every load, but it means
+// a change pushed to the app actually reaches the phone on the next visit
+// instead of silently serving a stale cached copy indefinitely.
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
 
@@ -39,6 +47,12 @@ self.addEventListener("fetch", (event) => {
   if (url.hostname.endsWith("openfoodfacts.org")) return;
 
   event.respondWith(
-    caches.match(event.request).then((cached) => cached || fetch(event.request))
+    fetch(event.request)
+      .then((response) => {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
