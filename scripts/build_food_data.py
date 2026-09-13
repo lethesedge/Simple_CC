@@ -19,7 +19,13 @@ SOURCES = [
     ("FoodData_Central_sr_legacy_food_json_2018-04.zip", "SRLegacyFoods", "usda-sr-legacy"),
 ]
 
-ENERGY_NUTRIENT_ID = 1008  # kcal
+# Most foods report energy as nutrient 1008 ("Energy", kcal). Foundation
+# Foods largely omit that and report only the derived Atwater factors
+# instead (2047 general, 2048 specific) — without this fallback ~62% of
+# Foundation Foods (includes many fresh vegetables, fruits, and cuts of
+# meat) get silently dropped for "missing" energy data that's really just
+# under a different nutrient id.
+ENERGY_NUTRIENT_IDS = (1008, 2047, 2048)
 
 # This bundle is meant to be whole/generic foods only — branded and
 # restaurant items are handled by the live Open Food Facts search instead.
@@ -45,11 +51,15 @@ def load_source(zip_name, top_level_key):
 
 
 def extract_kcal(food_nutrients):
+    by_id = {}
     for n in food_nutrients:
-        if n.get("nutrient", {}).get("id") == ENERGY_NUTRIENT_ID:
-            amount = n.get("amount")
-            if amount is not None:
-                return round(amount)
+        nid = n.get("nutrient", {}).get("id")
+        amount = n.get("amount")
+        if nid in ENERGY_NUTRIENT_IDS and amount is not None:
+            by_id[nid] = amount
+    for nid in ENERGY_NUTRIENT_IDS:
+        if nid in by_id:
+            return round(by_id[nid])
     return None
 
 

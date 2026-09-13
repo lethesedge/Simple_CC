@@ -1,25 +1,46 @@
-// Food search: bundled USDA dataset (offline) + Open Food Facts live API
-// (branded/packaged foods, requires network) + user's custom entries.
+// Food search: bundled USDA + international-staples datasets (offline) +
+// Open Food Facts live API (branded/packaged foods, requires network) +
+// user's custom entries.
 import { db } from "./db.js";
+
+const BUNDLED_SOURCES = ["data/foods.json", "data/international-foods.json"];
 
 let bundledFoods = null;
 
 async function loadBundledFoods() {
   if (bundledFoods) return bundledFoods;
-  const res = await fetch("data/foods.json");
-  bundledFoods = await res.json();
+  const parts = await Promise.all(
+    BUNDLED_SOURCES.map((url) => fetch(url).then((res) => res.json()))
+  );
+  bundledFoods = parts.flat();
   return bundledFoods;
+}
+
+function tokenize(str) {
+  return str.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
 }
 
 // Ranks a plain "Chicken, breast, raw" above "Bologna, chicken, pork" for a
 // search of "chicken" — lower is better, or null for no match at all.
+// USDA names are "primary ingredient, modifiers" (e.g. "Oil, sesame,
+// salad or cooking"), so a query like "sesame oil" won't appear as a
+// contiguous substring — rank 3 catches that by matching query words
+// against name words regardless of order.
 function matchRank(name, query) {
   const lower = name.toLowerCase();
   const idx = lower.indexOf(query);
-  if (idx === -1) return null;
-  if (idx === 0) return 0; // name starts with the query
-  if (lower[idx - 1] === "," || lower[idx - 1] === " ") return 1; // starts a word
-  return 2; // buried mid-word
+  if (idx !== -1) {
+    if (idx === 0) return 0; // name starts with the query
+    if (lower[idx - 1] === "," || lower[idx - 1] === " ") return 1; // starts a word
+    return 2; // buried mid-word
+  }
+
+  const queryTokens = tokenize(query);
+  if (queryTokens.length > 1) {
+    const nameTokens = new Set(tokenize(name));
+    if (queryTokens.every((t) => nameTokens.has(t))) return 3;
+  }
+  return null;
 }
 
 // Search the offline USDA dataset. Always available, no network needed.

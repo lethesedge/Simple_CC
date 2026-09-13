@@ -1,7 +1,7 @@
 // Bump this on every change to this file's own logic (browsers only check
 // for a new service worker when this file's bytes differ) — and also
 // whenever the precached URL list changes, so old caches get cleared out.
-const CACHE_NAME = "simple_cc-v2";
+const CACHE_NAME = "simple_cc-v3";
 const PRECACHE_URLS = [
   "./",
   "index.html",
@@ -14,6 +14,7 @@ const PRECACHE_URLS = [
   "js/log.js",
   "js/export.js",
   "data/foods.json",
+  "data/international-foods.json",
   "icons/icon-192.png",
   "icons/icon-512.png",
 ];
