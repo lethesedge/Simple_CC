@@ -1,0 +1,20 @@
+[
+  {"id": "intl:gochujang", "name": "Gochujang (Korean fermented chili paste)", "kcalPer100g": 220, "category": "International staples", "portions": [{"label": "tbsp", "grams": 18}]},
+  {"id": "intl:gochugaru", "name": "Gochugaru (Korean red chili flakes)", "kcalPer100g": 316, "category": "International staples", "portions": [{"label": "tbsp", "grams": 7}]},
+  {"id": "intl:doubanjiang", "name": "Doubanjiang (Sichuan broad bean chili paste)", "kcalPer100g": 181, "category": "International staples", "portions": [{"label": "tbsp", "grams": 18}]},
+  {"id": "intl:mirin", "name": "Mirin (Japanese sweet rice wine)", "kcalPer100g": 240, "category": "International staples", "portions": [{"label": "tbsp", "grams": 18}]},
+  {"id": "intl:rice-vinegar", "name": "Rice vinegar", "kcalPer100g": 18, "category": "International staples", "portions": [{"label": "tbsp", "grams": 15}]},
+  {"id": "intl:nori", "name": "Nori (dried seaweed sheets)", "kcalPer100g": 35, "category": "International staples", "portions": [{"label": "sheet", "grams": 3}]},
+  {"id": "intl:star-anise", "name": "Star anise, whole", "kcalPer100g": 337, "category": "International staples", "portions": [{"label": "pod", "grams": 1}]},
+  {"id": "intl:five-spice", "name": "Chinese five-spice powder", "kcalPer100g": 300, "category": "International staples", "portions": [{"label": "tsp", "grams": 2.6}]},
+  {"id": "intl:galangal", "name": "Galangal, raw", "kcalPer100g": 70, "category": "International staples", "portions": [{"label": "slice", "grams": 5}]},
+  {"id": "intl:shiso", "name": "Shiso (perilla) leaves, raw", "kcalPer100g": 37, "category": "International staples", "portions": [{"label": "leaf", "grams": 1}]},
+  {"id": "intl:black-bean-sauce", "name": "Black bean sauce (Chinese fermented)", "kcalPer100g": 90, "category": "International staples", "portions": [{"label": "tbsp", "grams": 17}]},
+  {"id": "intl:coconut-aminos", "name": "Coconut aminos", "kcalPer100g": 100, "category": "International staples", "portions": [{"label": "tbsp", "grams": 16}]},
+  {"id": "intl:panko", "name": "Panko breadcrumbs", "kcalPer100g": 360, "category": "International staples", "portions": [{"label": "cup", "grams": 50}]},
+  {"id": "intl:daikon", "name": "Daikon radish, raw", "kcalPer100g": 18, "category": "International staples", "portions": [{"label": "cup, sliced", "grams": 88}]},
+  {"id": "intl:lemongrass", "name": "Lemongrass, raw", "kcalPer100g": 99, "category": "International staples", "portions": [{"label": "stalk", "grams": 10}]},
+  {"id": "intl:chipotle-adobo", "name": "Chipotle peppers in adobo sauce, canned", "kcalPer100g": 70, "category": "International staples", "portions": [{"label": "pepper with sauce", "grams": 15}]},
+  {"id": "intl:kaffir-lime-leaves", "name": "Kaffir lime leaves, raw", "kcalPer100g": 96, "category": "International staples", "portions": [{"label": "leaf", "grams": 0.5}]},
+  {"id": "intl:tamarind-paste", "name": "Tamarind paste/concentrate", "kcalPer100g": 239, "category": "International staples", "portions": [{"label": "tbsp", "grams": 16}]}
+]

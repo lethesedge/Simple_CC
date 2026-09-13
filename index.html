@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Simple Calorie Counter</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0b0f14" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>Simple_CC</h1>
+  </header>
+
+  <nav class="tabs">
+    <button data-tab="today" class="tab-btn active">Today</button>
+    <button data-tab="week" class="tab-btn">Week</button>
+    <button data-tab="month" class="tab-btn">Month</button>
+    <button data-tab="recipes" class="tab-btn">Recipes</button>
+    <button data-tab="settings" class="tab-btn">Settings</button>
+  </nav>
+
+  <main>
+    <!-- TODAY -->
+    <section id="tab-today" class="tab-panel active">
+      <div class="goal-summary card">
+        <div class="stat"><span class="stat-value" id="today-consumed">0</span><span class="stat-label">consumed</span></div>
+        <div class="stat"><span class="stat-value" id="today-goal">0</span><span class="stat-label">goal</span></div>
+        <div class="stat"><span class="stat-value" id="today-remaining">0</span><span class="stat-label">remaining</span></div>
+      </div>
+
+      <div class="actions">
+        <button id="open-add-food">+ Add food</button>
+        <button id="open-log-recipe">+ Log recipe</button>
+      </div>
+
+      <ul id="today-entries" class="entry-list"></ul>
+    </section>
+
+    <!-- WEEK -->
+    <section id="tab-week" class="tab-panel">
+      <h2>Last 7 days</h2>
+      <div id="week-rows" class="day-rows"></div>
+    </section>
+
+    <!-- MONTH -->
+    <section id="tab-month" class="tab-panel">
+      <h2>Last 30 days</h2>
+      <div class="goal-summary card">
+        <div class="stat"><span class="stat-value" id="month-avg">0</span><span class="stat-label">avg/day</span></div>
+        <div class="stat"><span class="stat-value" id="month-total">0</span><span class="stat-label">total</span></div>
+      </div>
+      <div id="month-rows" class="day-rows"></div>
+    </section>
+
+    <!-- RECIPES -->
+    <section id="tab-recipes" class="tab-panel">
+      <div class="actions">
+        <button id="open-new-recipe">+ New recipe</button>
+      </div>
+      <ul id="recipe-list" class="entry-list"></ul>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="tab-settings" class="tab-panel">
+      <div class="card">
+        <label for="goal-input">Daily calorie goal</label>
+        <input type="number" id="goal-input" min="0" step="10" />
+        <button id="save-goal">Save</button>
+      </div>
+      <div class="card">
+        <h3>Export your data</h3>
+        <p class="muted">Download everything you've logged, to keep as a backup or move to your PC.</p>
+        <button id="export-csv">Export CSV</button>
+        <button id="export-json">Export JSON</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- ADD FOOD DIALOG -->
+  <dialog id="add-food-dialog">
+    <h2>Add food</h2>
+    <input type="search" id="food-search-input" placeholder="Search foods…" autocomplete="off" />
+    <div class="row">
+      <button id="food-search-branded" type="button">Search branded (online)</button>
+    </div>
+    <p id="food-search-status" class="muted"></p>
+    <ul id="food-search-results" class="entry-list"></ul>
+
+    <div id="food-quantity-panel" hidden>
+      <p id="selected-food-name" class="muted"></p>
+      <label for="food-grams-input">Amount (grams)</label>
+      <input type="number" id="food-grams-input" min="1" value="100" />
+      <div class="row">
+        <button id="confirm-add-food">Add</button>
+        <button id="cancel-add-food" type="button">Cancel</button>
+      </div>
+    </div>
+
+    <details>
+      <summary>Can't find it? Add a custom food</summary>
+      <label for="custom-food-name">Name</label>
+      <input type="text" id="custom-food-name" />
+      <label for="custom-food-kcal">Calories per 100g</label>
+      <input type="number" id="custom-food-kcal" min="0" />
+      <button id="save-custom-food" type="button">Save custom food</button>
+    </details>
+
+    <button id="close-add-food-dialog" type="button">Close</button>
+  </dialog>
+
+  <!-- LOG RECIPE DIALOG -->
+  <dialog id="log-recipe-dialog">
+    <h2>Log a recipe</h2>
+    <select id="recipe-picker"></select>
+
+    <div class="row">
+      <label><input type="radio" name="portion-mode" value="weight" checked /> Weight (g)</label>
+      <label><input type="radio" name="portion-mode" value="servings" /> Servings</label>
+      <label><input type="radio" name="portion-mode" value="percentage" /> Percentage</label>
+    </div>
+    <input type="number" id="portion-value-input" min="0" step="any" />
+
+    <p id="portion-preview" class="muted"></p>
+
+    <div class="row">
+      <button id="confirm-log-recipe">Log it</button>
+      <button id="cancel-log-recipe" type="button">Cancel</button>
+    </div>
+  </dialog>
+
+  <!-- NEW RECIPE DIALOG -->
+  <dialog id="new-recipe-dialog">
+    <h2>New recipe</h2>
+    <label for="recipe-name-input">Recipe name</label>
+    <input type="text" id="recipe-name-input" />
+    <label for="recipe-servings-input">Makes how many servings? (optional)</label>
+    <input type="number" id="recipe-servings-input" min="0" step="any" />
+
+    <h3>Components</h3>
+    <div class="row">
+      <input type="search" id="component-search-input" placeholder="Search foods to add…" autocomplete="off" />
+    </div>
+    <div class="row">
+      <button id="component-search-branded" type="button">Search branded (online)</button>
+    </div>
+    <p id="component-search-status" class="muted"></p>
+    <ul id="component-search-results" class="entry-list"></ul>
+    <ul id="recipe-components" class="entry-list"></ul>
+    <p id="recipe-totals-preview" class="muted"></p>
+
+    <div class="row">
+      <button id="save-recipe">Save recipe</button>
+      <button id="cancel-new-recipe" type="button">Cancel</button>
+    </div>
+  </dialog>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
