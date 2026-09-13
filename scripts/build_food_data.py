@@ -24,7 +24,7 @@ ENERGY_NUTRIENT_ID = 1008  # kcal
 # This bundle is meant to be whole/generic foods only — branded and
 # restaurant items are handled by the live Open Food Facts search instead.
 # SR Legacy (an older USDA file) mixes in a lot of both, so filter them out.
-EXCLUDED_CATEGORIES = {"Fast Foods", "Restaurant Foods"}
+EXCLUDED_CATEGORIES = {"Fast Foods", "Restaurant Foods", "Baby Foods"}
 BRAND_NAME_PATTERN = re.compile(r"^[A-Z0-9&'\-. ]{2,},")
 
 

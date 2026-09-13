@@ -326,26 +326,51 @@ function initNewRecipeDialog() {
     totalsPreview.textContent = `Total: ${totalGrams}g, ${totalKcal} kcal`;
   }
 
+  const status = document.getElementById("component-search-status");
+
+  function renderComponentResults(foods) {
+    searchResults.innerHTML = "";
+    for (const food of foods) {
+      const li = document.createElement("li");
+      li.innerHTML = `<span class="name">${escapeHtml(food.name)} — ${food.kcalPer100g} kcal/100g</span>`;
+      const addBtn = document.createElement("button");
+      addBtn.textContent = "+ Add";
+      addBtn.addEventListener("click", async () => {
+        if (food.id.startsWith("off:")) await cacheFood(food);
+        const component = await buildComponent(food.id, 100);
+        components.push(component);
+        renderComponents();
+      });
+      li.appendChild(addBtn);
+      searchResults.appendChild(li);
+    }
+  }
+
   searchInput.addEventListener("input", () => {
     clearTimeout(searchDebounce);
     const q = searchInput.value;
     searchDebounce = setTimeout(async () => {
       const foods = await searchAllOfflineFoods(q);
-      searchResults.innerHTML = "";
-      for (const food of foods) {
-        const li = document.createElement("li");
-        li.innerHTML = `<span class="name">${escapeHtml(food.name)} — ${food.kcalPer100g} kcal/100g</span>`;
-        const addBtn = document.createElement("button");
-        addBtn.textContent = "+ Add";
-        addBtn.addEventListener("click", async () => {
-          const component = await buildComponent(food.id, 100);
-          components.push(component);
-          renderComponents();
-        });
-        li.appendChild(addBtn);
-        searchResults.appendChild(li);
-      }
+      status.textContent = foods.length === 0 && q.trim().length >= 2 ? "No offline matches." : "";
+      renderComponentResults(foods);
     }, 200);
+  });
+
+  document.getElementById("component-search-branded").addEventListener("click", async () => {
+    const q = searchInput.value;
+    if (!q || q.trim().length < 2) {
+      status.textContent = "Type at least 2 characters first.";
+      return;
+    }
+    status.textContent = "Searching Open Food Facts…";
+    try {
+      const foods = await searchBrandedFoods(q);
+      status.textContent = foods.length === 0 ? `No branded results found for "${q}".` : "";
+      renderComponentResults(foods);
+    } catch (err) {
+      status.textContent = `Branded search failed: ${err.message}. Check you're online.`;
+      console.error("Branded search error:", err);
+    }
   });
 
   document.getElementById("open-new-recipe").addEventListener("click", () => {
@@ -353,6 +378,7 @@ function initNewRecipeDialog() {
     document.getElementById("recipe-name-input").value = "";
     document.getElementById("recipe-servings-input").value = "";
     searchInput.value = "";
+    status.textContent = "";
     searchResults.innerHTML = "";
     renderComponents();
     dialog.showModal();
